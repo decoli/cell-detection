@@ -16,7 +16,7 @@ def make_trainval_list(args):
     with open(args.output_file, 'a') as f:
         for each_annotation in annotation_list:
             name_ex = os.path.basename(each_annotation)
-            f.write(os.path.splitext(name_ex)[0])
+            f.write('{}\n'.format(os.path.splitext(name_ex)[0]))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
