@@ -25,3 +25,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     make_trainval_list(args)
+    print('---\n{} complete.'.format(os.path.basename(__file__)))
