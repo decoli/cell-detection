@@ -1,4 +1,4 @@
-.vscode/launch.json
+.vscode/
 output/
 .DS_Store
-.vscode/settings.json
+weights/
