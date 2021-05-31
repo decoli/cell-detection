@@ -6,3 +6,4 @@ debug/*
 !debug/.gitkeep
 database/*
 *.pyc
+!database/.gitkeep
