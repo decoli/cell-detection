@@ -79,27 +79,40 @@ def test_net(net, img, each_image_path, args, cur):
                     x_2 = int(boxes[each_box, 2].cpu().numpy() + 0.5)
                     y_1 = int(boxes[each_box, 1].cpu().numpy() + 0.5)
                     y_2 = int(boxes[each_box, 3].cpu().numpy() + 0.5)
+                    
+                    # save database
+                    cur_exe = '''
+                        INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence)
+                        VALUES('{image_path}', {x_1}, {x_2}, {y_1}, {y_2}, {conf})'''.format(
+                            image_path=each_image_path,
+                            x_1=x_1,
+                            x_2=x_2,
+                            y_1=y_1,
+                            y_2=y_2,
+                            conf=conf[each_box],
+                        )
+                    cur.execute(cur_exe)
 
                     # save the image
-                    pt_1 = (x_1, y_1)
-                    pt_2 = (x_2, y_2)
-                    color = (0, 255, 0)
-                    cv2.rectangle(ori_img, pt_1, pt_2, color, thickness=4, lineType=None, shift=None)
-
-                    # font
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    # org
-                    org = pt_1
-                    # fontScale
-                    fontScale = 1
-                    # Blue color in BGR
-                    color = (255, 0, 0)
-                    # Line thickness of 2 px
-                    thickness = 2
-                    # Using cv2.putText() method
-                    image = cv2.putText(ori_img, 'class:{class_name}'.format(class_name=j), org, font, 
-                                    fontScale, color, thickness, cv2.LINE_AA)
                     if args.write_image:
+                        pt_1 = (x_1, y_1)
+                        pt_2 = (x_2, y_2)
+                        color = (0, 255, 0)
+                        cv2.rectangle(ori_img, pt_1, pt_2, color, thickness=4, lineType=None, shift=None)
+
+                        # font
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        # org
+                        org = pt_1
+                        # fontScale
+                        fontScale = 1
+                        # Blue color in BGR
+                        color = (255, 0, 0)
+                        # Line thickness of 2 px
+                        thickness = 2
+                        # Using cv2.putText() method
+                        image = cv2.putText(ori_img, 'class:{class_name}'.format(class_name=j), org, font, 
+                                        fontScale, color, thickness, cv2.LINE_AA)
                         cv2.imwrite('output/_{}'.format(os.path.basename(each_image_path)), ori_img)
     else:
         cur_exe = '''
@@ -107,7 +120,7 @@ def test_net(net, img, each_image_path, args, cur):
             VALUES('Demo\\Path', 0.1, 0.2, 0.3, 0.4, 0.5)'''
         cur.execute(cur_exe)
         
-    
+
 if __name__ == '__main__':
     num_classes = len(labelmap) + 1 # +1 for background
 
