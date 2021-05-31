@@ -7,3 +7,5 @@ debug/*
 database/*
 *.pyc
 !database/.gitkeep
+samples/*
+!samples/.gitkeep
