@@ -4,3 +4,5 @@ output/
 weights/
 debug/*
 !debug/.gitkeep
+database/*
+*.pyc
