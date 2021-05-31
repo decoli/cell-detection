@@ -125,9 +125,9 @@ if __name__ == '__main__':
     num_classes = len(labelmap) + 1 # +1 for background
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-I', '--image_dir', default=None)
+    parser.add_argument('-I', '--image_dir', default=None, required=True)
     parser.add_argument('-NC', '--cuda', default=True, action='store_false')
-    parser.add_argument('-M', '--trained_model')
+    parser.add_argument('-M', '--trained_model', required=True)
     parser.add_argument('-T', '--threshold', type=float)
     parser.add_argument('-D', '--debug', action='store_true')
     parser.add_argument('-NW', '--no_write_image', action='store_false', default=True)
