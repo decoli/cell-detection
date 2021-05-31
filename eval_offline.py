@@ -126,11 +126,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-I', '--image_dir', default=None)
-    parser.add_argument('-C', '--cuda', default=True)
+    parser.add_argument('-NC', '--cuda', default=True, action='store_false')
     parser.add_argument('-M', '--trained_model')
     parser.add_argument('-T', '--threshold', type=float)
     parser.add_argument('-D', '--debug', action='store_true')
-    parser.add_argument('-W', '--no_write_image', action='store_false', default=True)
+    parser.add_argument('-NW', '--no_write_image', action='store_false', default=True)
     args = parser.parse_args()
 
     if args.image_dir:
