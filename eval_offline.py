@@ -46,16 +46,13 @@ def test_net(net, img, each_image_path, args, cur):
             img = cv2.resize(img,(300,300))
             img = torch.from_numpy(img).permute(2, 0, 1)
             img = img.float()
-            # ori_img, im, gt, h, w = dataset.pull_item(i)
             w = ori_img.shape[1]
             h = ori_img.shape[0]
 
             x = Variable(img.unsqueeze(0))
             if args.cuda:
                 x = x.cuda()
-            # _t['im_detect'].tic()
             detections = net(x).data
-            # detect_time = _t['im_detect'].toc(average=False)
 
             # skip j = 0, because it's the background class
             for j in range(1, detections.size(1)):
@@ -105,9 +102,10 @@ def test_net(net, img, each_image_path, args, cur):
                     if args.write_image:
                         cv2.imwrite('output/_{}'.format(os.path.basename(each_image_path)), ori_img)
     else:
-        cur.execute('INSERT INTO persons(name) values("Taro")')
-        cur.execute('INSERT INTO persons(name) values("Hanako")')
-        cur.execute('INSERT INTO persons(name) values("Hiroki")')
+        cur_exe = '''
+            INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence)
+            VALUES('Demo\\Path', 0.1, 0.2, 0.3, 0.4, 0.5)'''
+        cur.execute(cur_exe)
         
     
 if __name__ == '__main__':
@@ -129,23 +127,17 @@ if __name__ == '__main__':
     cur = conn.cursor()
     
     # create table
-    # cur_exe = '''CREATE TABLE Predicts
-    #     (
-    #     Id INTEGER PRIMARY KEY AUTOINCREMENT,
-    #     ImagePath STRING,
-    #     X1 Float,
-    #     X2 Float,
-    #     Y1 Float,
-    #     Y2 Float,
-    #     Confidence FLoat
-    #     )'''
     cur_exe = '''
-        CREATE TABLE IF NOT EXISTS persons
+        CREATE TABLE IF NOT EXISTS Predicts
         (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name STRING
-        )
-        '''
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ImagePath STRING,
+        X1 Float,
+        X2 Float,
+        Y1 Float,
+        Y2 Float,
+        Confidence FLoat
+        )'''
     cur.execute(cur_exe)
 
     if not args.debug:
