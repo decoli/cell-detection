@@ -1,5 +1,6 @@
 .vscode/
 output/
+!output/.gitkeep
 .DS_Store
 weights/
 debug/*
