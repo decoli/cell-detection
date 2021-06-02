@@ -111,15 +111,14 @@ def test_net(net, img, each_img_path, args, cur):
                 y_2 = int(boxes[each_box, 3].cpu().numpy() + 0.5)
                 
                 # save database
-                cur_exe = '''
-                    INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence)
-                    VALUES('{image_path}', {x_1}, {x_2}, {y_1}, {y_2}, {conf})'''.format(
+                cur_exe = '''INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence, Class) VALUES('{image_path}', {x_1}, {x_2}, {y_1}, {y_2}, {conf}, '{class_name}')'''.format(
                         image_path=each_img_path,
                         x_1=x_1,
                         x_2=x_2,
                         y_1=y_1,
                         y_2=y_2,
                         conf=conf[each_box],
+                        class_name=class_dic[str(j)]
                     )
                 cur.execute(cur_exe)
 
@@ -183,7 +182,8 @@ if __name__ == '__main__':
         X2 Float,
         Y1 Float,
         Y2 Float,
-        Confidence FLoat
+        Confidence FLoat,
+        Class STRING
         )'''
     cur.execute(cur_exe)
 
