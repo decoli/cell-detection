@@ -29,6 +29,37 @@ from data import VOC_CLASSES as labelmap
 from data import VOC_ROOT, BaseTransform, VOCAnnotationTransform, VOCDetection
 from ssd import build_ssd
 
+class_dic = {
+    '1': 'atr',
+    '2': 'epithelial cell',
+    '3': 'ncc',
+    '4': 'neutrophile',
+    '5': 'lymphocyte',
+    '6': 'clusters',
+    '7': 'clue',
+    '8': 'others',
+    '9': 'sus',
+    '10': 'middle cell',
+    '11': 'gland cell',
+    '12': 'blood',
+    '13': 'hs',
+    '14': 'zgnm',
+    '15': 'basical cell',
+    '16': 'hsil',
+    '17': 'koilocyte cell',
+    '18': 'can',
+    '19': 'lvpao',
+    '20': 'agc',
+    '21': 'acti',
+    '22': 'agc',
+    '23': 'tri',
+    '24': 'fun',
+    '25': 'a-h',
+    '26': 'xm',
+    '27': 'small cell',
+    '28': 'bal',
+    '29': 'ca',
+}
 
 def test_net(net, img, each_img_path, args, cur):
 
@@ -110,11 +141,11 @@ def test_net(net, img, each_img_path, args, cur):
                     # Line thickness of 2 px
                     thickness = 2
                     # Using cv2.putText() method
-                    image = cv2.putText(ori_img, 'class:{class_name}'.format(class_name=j), org, font, 
+                    image = cv2.putText(ori_img, '{class_name}'.format(class_name=class_dic[str(j)]), org, font, 
                                     fontScale, color, thickness, cv2.LINE_AA)
                     
                     img_output_path = '_{img_path}'.format(img_path=each_img_path)
-                    img_output_path = os.path.join(args.output_dir, img_output_path)
+                    img_output_path = os.path.join(args.output_dir, os.path.basename(img_output_path))
                     cv2.imwrite(img_output_path, ori_img)
 
 if __name__ == '__main__':
