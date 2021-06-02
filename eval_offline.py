@@ -30,7 +30,7 @@ from data import VOC_ROOT, BaseTransform, VOCAnnotationTransform, VOCDetection
 from ssd import build_ssd
 
 
-def test_net(net, img, each_image_path, args, cur):
+def test_net(net, img, each_img_path, args, cur):
 
     if not args.debug:
         num_images = 1
@@ -94,7 +94,7 @@ def test_net(net, img, each_image_path, args, cur):
                     cur.execute(cur_exe)
 
                     # save the image
-                    if args.write_image:
+                    if args.no_write_image:
                         pt_1 = (x_1, y_1)
                         pt_2 = (x_2, y_2)
                         color = (0, 255, 0)
@@ -113,7 +113,10 @@ def test_net(net, img, each_image_path, args, cur):
                         # Using cv2.putText() method
                         image = cv2.putText(ori_img, 'class:{class_name}'.format(class_name=j), org, font, 
                                         fontScale, color, thickness, cv2.LINE_AA)
-                        cv2.imwrite('output/_{}'.format(os.path.basename(each_image_path)), ori_img)
+                        
+                        img_output_path = '_{img_path}'.format(os.path.basename(img_path=each_img_path))
+                        img_output_path = os.path.join(args.output, img_output_path)
+                        cv2.imwrite(img_output_path, ori_img)
     else:
         cur_exe = '''
             INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence)
@@ -128,9 +131,10 @@ if __name__ == '__main__':
     parser.add_argument('-I', '--image_dir', default=None, required=True)
     parser.add_argument('-NC', '--cuda', default=True, action='store_false')
     parser.add_argument('-M', '--trained_model', required=True)
-    parser.add_argument('-T', '--threshold', type=float)
+    parser.add_argument('-T', '--threshold', type=float, default=0.5)
     parser.add_argument('-D', '--debug', action='store_true')
     parser.add_argument('-NW', '--no_write_image', action='store_false', default=True)
+    parser.add_argument('-O', '--output_dir', default='output')
     args = parser.parse_args()
 
     if args.image_dir:
@@ -138,7 +142,13 @@ if __name__ == '__main__':
     db_name = 'database/test.db'
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-    
+
+    if not os.path.isdir(args.output_dir):
+        os.mkdir(args.output_dir)
+        print('there is no folder named {output_dir}, and it has been automatically created.'.format(
+            output_dir=args.output_dir,
+        ))
+
     # create table
     cur_exe = '''
         CREATE TABLE IF NOT EXISTS Predicts
@@ -176,7 +186,10 @@ if __name__ == '__main__':
 
             for each_image_path in img_path:
                 img = cv2.imread(each_image_path)
-                test_net(net, img, each_image_path, args, cur)
+                if img is not None:
+                    test_net(net, img, each_image_path, args, cur)
+                else:
+                    print('can not read image:\n{img_path}'.format(img_path=each_image_path))
     else:
         test_net(net=None, img=None, each_image_path=None, args=args, cur=cur)
 
