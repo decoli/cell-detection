@@ -84,7 +84,7 @@ def test_net(net, img, each_img_path, args, cur):
                     cur_exe = '''
                         INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence)
                         VALUES('{image_path}', {x_1}, {x_2}, {y_1}, {y_2}, {conf})'''.format(
-                            image_path=each_image_path,
+                            image_path=each_img_path,
                             x_1=x_1,
                             x_2=x_2,
                             y_1=y_1,
@@ -191,7 +191,7 @@ if __name__ == '__main__':
                 else:
                     print('can not read image:\n{img_path}'.format(img_path=each_img_path))
     else:
-        test_net(net=None, img=None, each_image_path=None, args=args, cur=cur)
+        test_net(net=None, img=None, each_img_path=None, args=args, cur=cur)
 
     conn.commit()
     cur.close()
