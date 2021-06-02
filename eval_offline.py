@@ -114,7 +114,7 @@ def test_net(net, img, each_img_path, args, cur):
                         image = cv2.putText(ori_img, 'class:{class_name}'.format(class_name=j), org, font, 
                                         fontScale, color, thickness, cv2.LINE_AA)
                         
-                        img_output_path = '_{img_path}'.format(os.path.basename(img_path=each_img_path))
+                        img_output_path = '_{img_path}'.format(img_path=each_img_path)
                         img_output_path = os.path.join(args.output, img_output_path)
                         cv2.imwrite(img_output_path, ori_img)
     else:
@@ -184,12 +184,12 @@ if __name__ == '__main__':
             net.load_state_dict(torch.load(args.trained_model))
             net.eval()
 
-            for each_image_path in img_path:
-                img = cv2.imread(each_image_path)
+            for each_img_path in img_path:
+                img = cv2.imread(each_img_path)
                 if img is not None:
-                    test_net(net, img, each_image_path, args, cur)
+                    test_net(net, img, each_img_path, args, cur)
                 else:
-                    print('can not read image:\n{img_path}'.format(img_path=each_image_path))
+                    print('can not read image:\n{img_path}'.format(img_path=each_img_path))
     else:
         test_net(net=None, img=None, each_image_path=None, args=args, cur=cur)
 
