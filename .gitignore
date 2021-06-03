@@ -10,3 +10,5 @@ database/*
 !database/.gitkeep
 samples/*
 !samples/.gitkeep
+model/*
+!model/.gitkeep
