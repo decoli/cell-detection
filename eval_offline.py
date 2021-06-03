@@ -130,12 +130,12 @@ if __name__ == '__main__':
     parser.add_argument('-D', '--debug', action='store_true')
     parser.add_argument('-W', '--write_image', action='store_true', default=False)
     parser.add_argument('-O', '--output_dir', default='output')
+    parser.add_argument('-B', '--database_path', default='database/cell.db')
     args = parser.parse_args()
 
     if args.image_dir:
         img_path = glob.glob(os.path.join(args.image_dir, '*.jpg'))
-    db_name = 'database/test.db'
-    conn = sqlite3.connect(db_name)
+    conn = sqlite3.connect(args.database_path)
     cur = conn.cursor()
 
     if not os.path.isdir(args.output_dir):
