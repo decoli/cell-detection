@@ -69,11 +69,14 @@ def test_net(net, img, each_img_path, args, cur):
             boxes[:, 1] *= h
             boxes[:, 3] *= h
             conf = dets[:, 0]
-            keep, count = nms(boxes, conf, overlap=args.overlap)
+
+            if args.overlap:
+                keep, count = nms(boxes, conf, overlap=args.overlap)
 
             for each_box in range(boxes.shape[0]):
-                if not each_box in keep:
-                    continue
+                if args.overlap:
+                    if not each_box in keep:
+                        continue
                 if not conf[each_box].cpu().numpy() >= args.threshold:
                     continue
 
@@ -132,7 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('-W', '--write_image', action='store_true', default=False)
     parser.add_argument('-O', '--output_dir', default='output')
     parser.add_argument('-B', '--database_path', default='database/cell.db')
-    parser.add_argument('-L', '--overlap', default=0.5, type=float)
+    parser.add_argument('-L', '--overlap', default=None, type=float)
     args = parser.parse_args()
 
     if args.image_dir:
