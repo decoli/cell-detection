@@ -95,7 +95,7 @@ def test_net(net, img, each_img_path, args, cur):
                 cur.execute(cur_exe)
 
                 # save the image
-                if args.no_write_image:
+                if args.write_image:
                     pt_1 = (x_1, y_1)
                     pt_2 = (x_2, y_2)
                     color = (0, 255, 0)
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('-M', '--trained_model', required=True)
     parser.add_argument('-T', '--threshold', type=float, default=0.5)
     parser.add_argument('-D', '--debug', action='store_true')
-    parser.add_argument('-NW', '--no_write_image', action='store_false', default=True)
+    parser.add_argument('-W', '--write_image', action='store_true', default=False)
     parser.add_argument('-O', '--output_dir', default='output')
     args = parser.parse_args()
 
