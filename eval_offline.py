@@ -124,6 +124,13 @@ def test_net(net, img, each_img_path, args, cur):
                     cv2.imwrite(img_output_path, ori_img)
 
 if __name__ == '__main__':
+    torch.set_num_threads = 6
+    OMP_NUM_THREADS = 6
+    OMP_NUM_THREADS = 6
+    cudnn.benchmark = True
+    torch.backends.cudnn.deterministic = False
+    torch.backends.cudnn.enabled = True
+
     num_classes = len(labelmap) + 1 # +1 for background
 
     parser = argparse.ArgumentParser()
@@ -185,6 +192,8 @@ if __name__ == '__main__':
         net.eval()
 
         img_num = len(img_path)
+
+        time_cost_all_start = time.time()
         time_start = time.time()
         for i, each_img_path in enumerate(img_path):
             img = cv2.imread(each_img_path)
@@ -195,14 +204,17 @@ if __name__ == '__main__':
                 time_end_current = time.time()
 
                 time_end = time.time()
-                print('''progress: {progress:.1f}%, time left: {time_left}min, current image cost: {time_current:.2f}s'''.format(
-                    progress=i/img_num * 100,
-                    time_left=int((time_end-time_start) / (i + 1) * (img_num - i + 1) / 60 + 0.5),
-                    time_current = time_end_current - time_start_current
-                    ))
+                if i % 50 == 0:
+                    print('''progress: {progress:.1f}%, time left: {time_left}min, current image cost: {time_current:.2f}s'''.format(
+                        progress=i/img_num * 100,
+                        time_left=int((time_end-time_start) / (i + 1) * (img_num - i + 1) / 60 + 0.5),
+                        time_current = time_end_current - time_start_current
+                        ))
 
             else:
                 print('can not read image:\n{img_path}'.format(img_path=each_img_path))
+        time_cost_all_end = time.time()
+        print('time cost all: {time_cost_all:1f}'.format(time_cost_all=time_cost_all_end - time_cost_all_start))
 
     conn.commit()
     cur.close()
