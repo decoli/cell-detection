@@ -33,7 +33,7 @@ from layers.box_utils import nms
 from ssd import build_ssd
 
 
-def test_net(net, img, each_img_path, args, cur):
+def test_net(net, img, each_img_path, args, cur=None):
 
     num_images = 1
     # all detections are collected into:
@@ -87,16 +87,17 @@ def test_net(net, img, each_img_path, args, cur):
                 y_2 = int(boxes[each_box, 3].cpu().numpy() + 0.5)
                 
                 # save database
-                cur_exe = '''INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence, Class) VALUES('{image_path}', {x_1}, {x_2}, {y_1}, {y_2}, {conf}, '{class_name}')'''.format(
-                        image_path=each_img_path,
-                        x_1=x_1,
-                        x_2=x_2,
-                        y_1=y_1,
-                        y_2=y_2,
-                        conf=conf[each_box],
-                        class_name=class_name.class_dic[str(j)]
-                    )
-                cur.execute(cur_exe)
+                if args.output_db:
+                    cur_exe = '''INSERT INTO Predicts(ImagePath, X1, X2, Y1, Y2, Confidence, Class) VALUES('{image_path}', {x_1}, {x_2}, {y_1}, {y_2}, {conf}, '{class_name}')'''.format(
+                            image_path=each_img_path,
+                            x_1=x_1,
+                            x_2=x_2,
+                            y_1=y_1,
+                            y_2=y_2,
+                            conf=conf[each_box],
+                            class_name=class_name.class_dic[str(j)]
+                        )
+                    cur.execute(cur_exe)
 
                 # save the image
                 if args.write_image:
@@ -124,12 +125,12 @@ def test_net(net, img, each_img_path, args, cur):
                     cv2.imwrite(img_output_path, ori_img)
 
 if __name__ == '__main__':
-    torch.set_num_threads = 6
-    OMP_NUM_THREADS = 6
-    OMP_NUM_THREADS = 6
-    cudnn.benchmark = True
-    torch.backends.cudnn.deterministic = False
-    torch.backends.cudnn.enabled = True
+    # torch.set_num_threads = 6
+    # OMP_NUM_THREADS = 6
+    # OMP_NUM_THREADS = 6
+    # cudnn.benchmark = True
+    # torch.backends.cudnn.deterministic = False
+    # torch.backends.cudnn.enabled = True
 
     num_classes = len(labelmap) + 1 # +1 for background
 
@@ -141,14 +142,17 @@ if __name__ == '__main__':
     parser.add_argument('-D', '--debug', action='store_true')
     parser.add_argument('-W', '--write_image', action='store_true', default=False)
     parser.add_argument('-O', '--output_dir', default='output')
-    parser.add_argument('-B', '--database_path', default='database/cell.db')
     parser.add_argument('-L', '--overlap', default=None, type=float)
+    parser.add_argument('-B', '--output_db_path', default='database/cell.db')
+    parser.add_argument('-DB', '--output_db', default=False, action='store_true')
     args = parser.parse_args()
 
     if args.image_dir:
         img_path = glob.glob(os.path.join(args.image_dir, '*.jpg'))
-    conn = sqlite3.connect(args.database_path)
-    cur = conn.cursor()
+
+    if args.output_db:
+        conn = sqlite3.connect(args.output_db_path)
+        cur = conn.cursor()
 
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
@@ -169,7 +173,7 @@ if __name__ == '__main__':
         Confidence FLoat,
         Class STRING
         )'''
-    cur.execute(cur_exe)
+    # cur.execute(cur_exe)
 
     if torch.cuda.is_available():
         if args.cuda:
@@ -200,7 +204,10 @@ if __name__ == '__main__':
             if img is not None:
 
                 time_start_current = time.time()
-                test_net(net, img, each_img_path, args, cur)
+                if args.output_db:
+                    test_net(net, img, each_img_path, args, cur)
+                else:
+                    test_net(net, img, each_img_path, args)
                 time_end_current = time.time()
 
                 time_end = time.time()
@@ -216,6 +223,7 @@ if __name__ == '__main__':
         time_cost_all_end = time.time()
         print('time cost all: {time_cost_all:1f}'.format(time_cost_all=time_cost_all_end - time_cost_all_start))
 
-    conn.commit()
-    cur.close()
-    conn.close()
+    if args.output_db:
+        conn.commit()
+        cur.close()
+        conn.close()
