@@ -200,29 +200,23 @@ if __name__ == '__main__':
                 img_set.append(each_img)
                 img_path_set.append(each_img_path)
 
-        img_set_iter = iter(img_set)
-        img_ori_set_iter = iter(img_ori_set)
-        img_path_set_iter = iter(img_path_set)
-
         time_load_image_end = time.time()
         print('time cost, loading image: {:1f}s'.format(time_load_image_end - time_load_image_start))
 
         time_start = time.time()
+
         # predict
         img_predict = []
         img_ori_predict = []
         img_path_predict = []
-
         last_predict = False
+        count_predict = 0
         while True:
             if len(img_predict) == 0:
                 time_img_predict_start = time.time()
 
-            try:
-                img_predict.append(next(img_set_iter))
-                img_ori_predict.append(next(img_ori_set_iter))
-                img_path_predict.append(next(img_path_set_iter))
-            except StopIteration:
+            img_predict = img_set[args.num_predict * count_predict: args.num_predict * (count_predict + 1)]
+            if not len(img_predict) == args.num_predict:
                 last_predict = True
 
             if (len(img_predict) == args.num_predict) or last_predict:
@@ -240,9 +234,11 @@ if __name__ == '__main__':
                 time_predict_end = time.time()
                 print('time cost, the model predict: {:1f}'.format(time_predict_end - time_predict_start))
 
-                img_predict = []
-                img_path_predict = []
-            
+                if len(img_predict) == args.num_predict:
+                    count_predict += 1
+                    img_predict = []
+                    img_path_predict = []
+
             if last_predict:
                 break
 
