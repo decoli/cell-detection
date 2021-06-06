@@ -229,6 +229,7 @@ if __name__ == '__main__':
                 img_predict = torch.Tensor(img_predict)
                 
                 time_img_predict_end = time.time()
+                print('----------')
                 print('time cost, get images to predict: {:1f}s'.format(time_img_predict_end - time_img_predict_start))
 
                 time_predict_start = time.time()
