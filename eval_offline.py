@@ -213,9 +213,11 @@ if __name__ == '__main__':
         img_ori_predict = []
         img_path_predict = []
 
-        time_img_predict_start = time.time()
         last_predict = False
         while True:
+            if len(img_predict) == 0:
+                time_img_predict_start = time.time()
+
             try:
                 img_predict.append(next(img_set_iter))
                 img_ori_predict.append(next(img_ori_set_iter))
