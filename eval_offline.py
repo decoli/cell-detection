@@ -229,15 +229,15 @@ if __name__ == '__main__':
                 img_predict = torch.Tensor(img_predict)
                 
                 time_img_predict_end = time.time()
-                time_start_current = time.time()
-
                 print('time cost, get images to predict: {:1f}s'.format(time_img_predict_end - time_img_predict_start))
 
+                time_predict_start = time.time()
                 if args.output_db:
                     test_net(net, img_predict, img_ori_predict, img_path_predict, args, cur)
                 else:
                     test_net(net, img_predict, img_ori_predict, img_path_predict, args)
-                time_end_current = time.time()
+                time_predict_end = time.time()
+                print('time cost, the model predict: {:1f}'.format(time_predict_end - time_predict_start))
 
                 img_predict = []
                 img_path_predict = []
