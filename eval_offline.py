@@ -36,7 +36,7 @@ from ssd import build_ssd
 def test_net(net, img, img_ori, img_path, args, cur=None):
     # predict
     img_predict = img / 255.
-    img_predict = torch.Tensor(img)
+    img_predict = torch.Tensor(img_predict)
     img_predict = img_predict.permute(0,3,1,2)
     img_predict = img_predict.cuda()
     detections = net(img_predict).data
@@ -222,7 +222,6 @@ if __name__ == '__main__':
                 img_path_predict.append(next(img_path_set_iter))
             except StopIteration:
                 last_predict = True
-                break
 
             if (len(img_predict) == args.num_predict) or last_predict:
                 img_predict = torch.Tensor(img_predict)
@@ -240,6 +239,10 @@ if __name__ == '__main__':
 
                 img_predict = []
                 img_path_predict = []
+            
+            if last_predict:
+                break
+
         time_end = time.time()
 
         time_cost_all_end = time.time()
