@@ -214,15 +214,17 @@ if __name__ == '__main__':
         img_path_predict = []
 
         time_img_predict_start = time.time()
+        last_predict = False
         while True:
             try:
                 img_predict.append(next(img_set_iter))
                 img_ori_predict.append(next(img_ori_set_iter))
                 img_path_predict.append(next(img_path_set_iter))
             except StopIteration:
+                last_predict = True
                 break
 
-            if len(img_predict) == args.num_predict:
+            if (len(img_predict) == args.num_predict) or last_predict:
                 img_predict = torch.Tensor(img_predict)
                 
                 time_img_predict_end = time.time()
