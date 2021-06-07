@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import class_name
 import argparse
 import base64
 import gc
@@ -15,6 +14,7 @@ import sys
 import threading
 import time
 from io import BytesIO
+from multiprocessing import Process
 from sqlite3.dbapi2 import Timestamp
 
 import cv2
@@ -27,6 +27,7 @@ from flask import Flask, request
 from PIL import Image
 from torch.autograd import Variable
 
+import class_name
 from data import VOC_CLASSES as labelmap
 from data import VOC_ROOT, BaseTransform, VOCAnnotationTransform, VOCDetection
 from layers.box_utils import nms
@@ -34,12 +35,19 @@ from ssd import build_ssd
 
 
 def test_net(net, img, img_ori, img_path, args, cur=None):
+    # convert input images
+    time_convert_start = time.time()
+
+    each_img_predict = torch.Tensor(img)
+    each_img_predict = each_img_predict / 255.
+    each_img_predict = each_img_predict.permute(0,3,1,2)
+    each_img_predict = each_img_predict.cuda()
+    
+    time_convert_end = time.time()
+    print('time cost, converting image: {:1f}s'.format(time_convert_end - time_convert_start))
+    
     # predict
-    img_predict = img / 255.
-    img_predict = torch.Tensor(img_predict)
-    img_predict = img_predict.permute(0,3,1,2)
-    img_predict = img_predict.cuda()
-    detections = net(img_predict).data
+    detections = net(each_img_predict).data
 
     if not args.only_predict:
         for i, (each_img, each_img_ori, each_img_path) in enumerate(zip(img, img_ori, img_path)):
@@ -159,6 +167,8 @@ if __name__ == '__main__':
             Class STRING
             )'''
         cur.execute(cur_exe)
+    else:
+        cur = None
 
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
@@ -186,19 +196,45 @@ if __name__ == '__main__':
         print('Finished loading model.')
 
         time_cost_all_start = time.time()
-        time_load_image_start = time.time()
 
+        # load images
+        time_load_image_start = time.time()
         img_path = glob.glob(os.path.join(args.image_dir, '*.jpg'))
+        
         img_set = []
         img_ori_set = []
         img_path_set = []
-        for each_img_path in img_path:
-            each_img = cv2.imread(each_img_path)
-            if each_img is not None:
-                img_ori_set.append(each_img)
-                each_img = cv2.resize(each_img,(300,300))
-                img_set.append(each_img)
-                img_path_set.append(each_img_path)
+
+        img_predict = []
+        img_ori_predict = []
+        img_path_predict = []
+
+        img_path_iter = iter(img_path)
+        while True:
+            try:
+                each_img_path = next(img_path_iter)
+                each_img = cv2.imread(each_img_path)
+
+                if each_img is not None:
+                    img_ori_set.append(each_img)
+                    each_img = cv2.resize(each_img,(300,300))
+                    img_set.append(each_img)
+                    img_path_set.append(each_img_path)
+                
+                if len(img_set) % args.num_predict == 0:
+                    img_predict.append(img_set)
+                    img_ori_predict.append(img_ori_set)
+                    img_path_predict.append(img_path_set)
+                    
+                    img_set = []
+                    img_ori_set = []
+                    img_path_set = []
+
+            except StopIteration:
+                img_predict.append(img_set)
+                img_ori_predict.append(img_ori_set)
+                img_path_predict.append(img_path_set)
+                break
 
         time_load_image_end = time.time()
         print('time cost, loading image: {:1f}s'.format(time_load_image_end - time_load_image_start))
@@ -206,44 +242,13 @@ if __name__ == '__main__':
         time_start = time.time()
 
         # predict
-        img_predict = []
-        img_ori_predict = []
-        img_path_predict = []
-        last_predict = False
-        count_predict = 0
-        while True:
-            if len(img_predict) == 0:
-                time_img_predict_start = time.time()
-
-            img_predict = img_set[args.num_predict * count_predict: args.num_predict * (count_predict + 1)]
-            if not len(img_predict) == args.num_predict:
-                last_predict = True
-
-            if (len(img_predict) == args.num_predict) or last_predict:
-                img_predict = torch.Tensor(img_predict)
-                
-                time_img_predict_end = time.time()
-                print('----------')
-                print('time cost, get images to predict: {:1f}s'.format(time_img_predict_end - time_img_predict_start))
-
-                time_predict_start = time.time()
-                if args.output_db:
-                    test_net(net, img_predict, img_ori_predict, img_path_predict, args, cur)
-                else:
-                    test_net(net, img_predict, img_ori_predict, img_path_predict, args)
-                time_predict_end = time.time()
-                print('time cost, the model predict: {:1f}'.format(time_predict_end - time_predict_start))
-
-                if len(img_predict) == args.num_predict:
-                    count_predict += 1
-                    img_predict = []
-                    img_path_predict = []
-
-            if last_predict:
-                break
+        for each_img_predict, each_img_ori_predict, each_img_path_predict in zip(img_predict, img_ori_predict, img_path_predict):
+            time_predict_start = time.time()
+            test_net(net, each_img_predict, each_img_ori_predict, each_img_path_predict, args, cur)
+            time_predict_end = time.time()
+            print('time cost, the model predict: {:1f}'.format(time_predict_end - time_predict_start))
 
         time_end = time.time()
-
         time_cost_all_end = time.time()
         print('time cost prediction: {time_prediction:1f}'.format(time_prediction=time_end - time_start))
         print('time cost all: {time_cost_all:1f}'.format(time_cost_all=time_cost_all_end - time_cost_all_start))
