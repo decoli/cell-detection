@@ -87,7 +87,7 @@ def count_class(args):
             elif name_object == 'Koilocyte cell':
                 Koilocyte += 1
 
-            elif name_object == 'Clusters':
+            elif name_object == 'Clusters' or name_object == 'clusters':
                 Clusters += 1
 
             elif name_object == 'Basical cell':
@@ -102,7 +102,7 @@ def count_class(args):
             elif name_object == 'Koilocyte cell1':
                 Koilocyte_cell1 += 1
 
-            elif name_object == 'Blood':
+            elif name_object == 'Blood' or name_object == 'blood':
                 Blood += 1
 
             elif name_object == 'Ncc':
